@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 
 const MONGODB_URI = process.env.MONGOATLAS_URI || "mongodb+srv://chaltumabdulkadir:<password>@cluster0.aq4qh.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 
-mongoose.connect(MONGODB_URI, {useNewUrlParser: true})
+// mongoose.connect(MONGODB_URI, {useNewUrlParser: true})
 const db = require("./models");
 
 app.use(logger("dev"));
@@ -15,9 +15,10 @@ app.use(logger("dev"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/workout", { useNewUrlParser: true });
+
 app.use(express.static("public"));
 
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/workout", { useNewUrlParser: true });
 
 app.get("/api/workouts", (req, res) => {
   db.Workout.find({}, null, { sort: {day: 1} })
