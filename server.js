@@ -20,18 +20,18 @@ app.use(express.static("public"));
 
 
 app.get("/api/workouts", (req, res) => {
-  db.Workout.find({}, null, { sort: {day: 1} })
+  db.Workout.find({}, null, { sort: { day: 1 } })
     .populate("exercises")
     .then(queryResult => {
-        queryResult.forEach(result => {
-            var totalDuration = 0;
+      queryResult.forEach(result => {
+        var totalDuration = 0;
 
-            result.exercises.forEach(exercise => {
-                totalDuration += exercise.duration;
-            })
-
-            result.totalDuration = totalDuration;
+        result.exercises.forEach(exercise => {
+          totalDuration += exercise.duration;
         })
+
+        result.totalDuration = totalDuration;
+      })
 
       console.log(queryResult)
       res.json(queryResult);
@@ -42,21 +42,14 @@ app.get("/api/workouts", (req, res) => {
 });
 
 app.get("/api/workouts/range", (req, res) => {
-    db.Workout.find({})
-    .populate("exercises")
-    .then(queryResult => {
-        queryResult.forEach(result => {
-            var totalDuration = 0;
-
-            result.exercises.forEach(exercise => {
-                totalDuration += exercise.duration;
-            })
-
-            result.totalDuration = totalDuration;
-        })
-        console.log(queryResult)
-      res.json(queryResult);
-    })
+  db.Workout.aggregate([{
+    $addFields: {
+      totalDuration: { $sum: "$exercises.duration" }
+    }
+  }]).sort({_id: -1})
+      .limit(7)
+      .then(workouts => {
+        res.json(workouts)})
     .catch(err => {
       res.json(err);
     });
@@ -64,35 +57,35 @@ app.get("/api/workouts/range", (req, res) => {
 
 // render exercise html
 app.get("/exercise", (req, res) => {
-    res.sendFile(path.join(__dirname, "./public/exercise.html"))
+  res.sendFile(path.join(__dirname, "./public/exercise.html"))
 });
 
 app.get("/stats", (req, res) => {
-    res.sendFile(path.join(__dirname, "./public/stats.html"))
+  res.sendFile(path.join(__dirname, "./public/stats.html"))
 });
 
 
 // adding new exercise
 app.put("/api/workouts/:id", (req, res) => {
 
-    db.Exercise.create(req.body)
-    .then(({_id}) => {
-        db.Workout.findByIdAndUpdate(
-          req.params.id,
-            // {_id: req.params.id},
-            { $push: {exercises: _id}},
-            { new: true }
-            )
+  db.Exercise.create(req.body)
+    .then(({ _id }) => {
+      db.Workout.findByIdAndUpdate(
+        req.params.id,
+        // {_id: req.params.id},
+        { $push: { exercises: _id } },
+        // { new: true }
+      )
         .then(updateResult => {
-            res.json(updateResult)
-        })
+          res.json(updateResult)
+        }).catch(err => res.json(err))
     })
 
 })
 
 // adding new workouts
 app.post("/api/workouts", (req, res) => {
-    db.Workout.create({})
+  db.Workout.create({})
     .then(queryResult => {
       res.json(queryResult);
     })
