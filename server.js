@@ -5,17 +5,16 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const MONGODB_URI = process.env.MONGOATLAS_URI || "mongodb+srv://chaltumabdulkadir:<password>@cluster0.aq4qh.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 
 // mongoose.connect(MONGODB_URI, {useNewUrlParser: true})
 const db = require("./models");
+mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/workout", { useNewUrlParser: true });
 
 app.use(logger("dev"));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/workout", { useNewUrlParser: true });
 
 app.use(express.static("public"));
 
@@ -78,8 +77,9 @@ app.put("/api/workouts/:id", (req, res) => {
 
     db.Exercise.create(req.body)
     .then(({_id}) => {
-        db.Workout.findOneAndUpdate(
-            {_id: req.params.id},
+        db.Workout.findByIdAndUpdate(
+          req.params.id,
+            // {_id: req.params.id},
             { $push: {exercises: _id}},
             { new: true }
             )
@@ -92,7 +92,7 @@ app.put("/api/workouts/:id", (req, res) => {
 
 // adding new workouts
 app.post("/api/workouts", (req, res) => {
-    db.Workout.create(req.body)
+    db.Workout.create({})
     .then(queryResult => {
       res.json(queryResult);
     })

@@ -25,6 +25,7 @@ async function initExercise() {
     console.log(workout)
   }
   if (workout) {
+    console.log(workout);
     location.search = "?id=" + workout._id;
   }
 
