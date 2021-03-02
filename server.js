@@ -57,7 +57,7 @@ app.get("/api/workouts/range", (req, res) => {
 
 // render exercise html
 app.get("/exercise", (req, res) => {
-  res.sendFile(path.join(__dirname, "./public/exercise.html"))
+  res.sendFile(path.join(__dirname, "/exercise.html"))
 });
 
 app.get("/stats", (req, res) => {
